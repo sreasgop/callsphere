@@ -1,0 +1,170 @@
+# ============================================================
+# DEFAULT-DENY PUBLISHING POLICY
+# Ignore all hidden files and directories by default.
+# Explicitly allow only safe project configurations.
+# ============================================================
+
+.*
+
+# ------------------------------------------------------------
+# ALLOW ESSENTIAL PROJECT CONFIGURATION
+# ------------------------------------------------------------
+
+!.gitignore
+!.gitattributes
+!.editorconfig
+!.env.example
+!.env.template
+!.github/
+
+# ============================================================
+# SECRETS, CERTIFICATES & TUNNEL / PUSH CREDENTIALS
+# ============================================================
+
+.env
+.env.*
+!.env.example
+!.env.template
+
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+id_rsa
+id_ed25519
+id_ecdsa
+
+credentials/
+secrets/
+*.tfstate
+*.tfstate.backup
+
+# Cloud, Firebase (FCM), Web Push (VAPID), Cloudflare Tunnel, TURN
+service-account*.json
+*-service-account*.json
+credentials*.json
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+vapid*.json
+cloudflared*.yml
+cloudflared*.yaml
+*-tunnel.json
+turn-credentials.*
+
+# ============================================================
+# PRIVATE AI AGENT WORKSPACE & MATT POCOCK SKILLS
+# Keep the Git history clean and free of agent orchestration files.
+# ============================================================
+
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+COPILOT.md
+ANTIGRAVITY.md
+
+.agents/
+.agent/
+.antigravity/
+.claude/
+.cursor/
+.gemini/
+.copilot/
+
+# Matt Pocock skills local artifacts & trackers
+skills-lock.json
+docs/agents/
+.scratch/
+GLOSSARY.md
+GLOSSARY-MAP.md
+
+# Private internal planning & notes
+.private/
+*.private.md
+*.internal.md
+
+# ============================================================
+# PYTHON / FLASK BACKEND
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ============================================================
+# NODE / REACT WEB (VITE + PWA) / REACT NATIVE (EXPO)
+# ============================================================
+
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.expo/
+.expo-shared/
+web-build/
+*.tsbuildinfo
+
+# Native mobile builds & packages
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/android/local.properties
+*.apk
+*.aab
+*.ipa
+*.orig.*
+
+# ============================================================
+# CALLSPHERE LOCAL DATA, UPLOADS, DATABASES & LOGS
+# ============================================================
+
+storage/
+uploads/
+voicemails/
+
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+!server/migrations/*.sql
+*.dump
+dump.rdb
+appendonly.aof
+
+*.local
+*.local.*
+
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.old
+
+# ============================================================
+# IDE & OS JUNK
+# ============================================================
+
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
