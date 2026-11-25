@@ -1,188 +1,242 @@
-# 📞 CallSphere — SIM-Free Web-Based VoIP Network
-> **College Final Year Major Project** | Internet Telephony Platform with 10-Digit UID Routing & WebRTC Calling
+# CallSphere
 
-CallSphere is a modern, SIM-free Web-based VoIP (Voice over IP) application. Users register with an email address to automatically receive a **unique 10-digit Virtual Phone Number (UID)** (e.g. `4839201745`). People can dial any 10-digit UID to establish encrypted, real-time peer-to-peer audio and video calls over the internet.
-
----
-
-## 🌟 Key Features
-
-- 📱 **10-Digit Virtual Phone Numbers**: Automatic generation and assignment of unique 10-digit UIDs upon user sign-up.
-- 🎙️ **Real-Time WebRTC Calling**: Encrypted Peer-to-Peer (P2P) audio/video communication with STUN NAT traversal support (`stun:stun.l.google.com:19302`).
-- 🔐 **Secure Password Hashing & Auth**: Salted password hashing via `passlib[bcrypt]` and JSON Web Token (JWT) authorization.
-- ⚡ **FastAPI & Async WebSockets Backend**: High-performance Python backend with native WebSocket signaling and auto-generated Swagger UI (`/docs`).
-- 📖 **Contacts Book**: Save contacts with custom nicknames, view real-time online/offline presence status.
-- 🕒 **Call History & Recents**: Track inbound, outbound, missed, and rejected calls with exact timestamps and durations.
-- 👥 **Group Conference Rooms**: Create group rooms (starting with 9-digit UIDs) with admin permissions, contact inviting, and group management.
-- 🎛️ **Control Center**: Privacy controls (Everyone, Contacts Only, Do Not Disturb), audio mixer controls, and security credentials update.
-- 💾 **Dual-Database Layer**: Zero-config **SQLite** database out-of-the-box (creates `callsphere.db` automatically) + full **MySQL** schema support (`voip_app_new.sql`).
+CallSphere is a SIM-free, cross-platform VoIP and unified communication system. Users register with an email and password to receive a permanent 10-digit User Identifier (UID) that acts as a virtual phone number for peer-to-peer WebRTC audio/video calling and end-to-end encrypted (E2EE) messaging.
 
 ---
 
-## 🛠️ Tech Stack
+## How the Codebase Works
 
-- **Backend**: Python 3.10+, FastAPI, Uvicorn, Native WebSockets, Pydantic
-- **Security**: `passlib[bcrypt]`, `pyjwt`, SHA-256 fallback
-- **Frontend**: HTML5, Vanilla JavaScript (ES6+), Glassmorphic CSS3, Bootstrap 5, SweetAlert2
-- **VoIP Engine**: HTML5 WebRTC API (`RTCPeerConnection`, STUN ICE candidate gathering, getUserMedia)
-- **Database**: SQLite3 (default zero-config) / MySQL
+CallSphere is organized as a two-part monorepo (`server/` + `apps/web/`):
 
----
-
-## 🏗️ Architecture & WebRTC Signaling Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant ClientA as Caller (User A)
-    participant Server as FastAPI Server (WebSockets)
-    participant ClientB as Callee (User B)
-    
-    Note over ClientA,ClientB: 1. Presence & Registration
-    ClientA->>Server: WebSocket Connect /ws/4839201745
-    ClientB->>Server: WebSocket Connect /ws/9182736450
-
-    Note over ClientA,ClientB: 2. WebRTC Call Handshake
-    ClientA->>Server: Send 'make-offer' (Target: 9182736450, SDP Offer)
-    Server->>ClientB: Relay 'incoming-call' (Caller: 4839201745, SDP Offer)
-    ClientB->>Server: Send 'make-answer' (Target: 4839201745, SDP Answer)
-    Server->>ClientA: Relay 'call-answered' (SDP Answer)
-
-    Note over ClientA,ClientB: 3. ICE Candidate Exchange & P2P Stream
-    ClientA->>Server: Send ICE Candidate
-    Server->>ClientB: Relay ICE Candidate
-    ClientB->>Server: Send ICE Candidate
-    Server->>ClientA: Relay ICE Candidate
-    
-    Note over ClientA,ClientB: Direct DTLS-SRTP Media Stream (Audio/Video)
-    ClientA<--P2P Direct Stream-->ClientB
-```
-
----
-
-## 🚀 Quick Start Guide (Local Setup)
-
-### 1. Prerequisites
-- **Python**: Version `3.10` or higher
-- **Web Browser**: Chrome, Firefox, Edge, or Brave (Microphone/Camera access enabled)
-
-### 2. Installation Steps
-
-1. **Navigate to the Project Backend Directory**:
-   ```bash
-   cd callsphere/backend
-   ```
-
-2. **Create and Activate Virtual Environment**:
-   - **Linux / macOS**:
-     ```bash
-     python3 -m venv .venv
-     source .venv/bin/activate
-     ```
-   - **Windows (Command Prompt / PowerShell)**:
-     ```cmd
-     python -m venv .venv
-     .venv\Scripts\activate
-     ```
-
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Launch the FastAPI Backend Server**:
-   ```bash
-   python3 app.py
-   ```
-   *Alternative launch via Uvicorn*:
-   ```bash
-   uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-   ```
-
-5. **Open the Application**:
-   Open your browser and navigate to:
-   - **Web Application**: [http://localhost:5000/app](http://localhost:5000/app) or [http://localhost:5000](http://localhost:5000)
-   - **Interactive API Documentation (Swagger)**: [http://localhost:5000/docs](http://localhost:5000/docs)
-
----
-
-## 🧪 Testing 1-on-1 Internet Calls
-
-1. Open **Tab 1** (or Browser 1): Go to `http://localhost:5000/app`.
-   - Click **"New User? Get a UID"**.
-   - Register User 1 (e.g. `Alice`, `alice@example.com`).
-   - Copy the assigned **10-digit UID** (e.g. `4839201745`).
-
-2. Open **Tab 2** (or Incognito / Browser 2): Go to `http://localhost:5000/app`.
-   - Register User 2 (e.g. `Bob`, `bob@example.com`).
-   - Copy Bob's **10-digit UID** (e.g. `9182736450`).
-
-3. **Make a Call**:
-   - In Alice's tab, enter Bob's UID (`9182736450`) into the dialpad or click the telephone icon.
-   - Bob will receive a real-time ringing alert popup with **Answer** or **Reject** options.
-   - Click **Answer** to start live audio/video communication!
-
----
-
-## 🗄️ Database Configuration (Optional MySQL Mode)
-
-By default, CallSphere uses zero-config **SQLite** (`callsphere.db`) created automatically in the `backend` folder.
-
-To switch to **MySQL**:
-
-1. Import `database/voip_app_new.sql` into your MySQL server:
-   ```bash
-   mysql -u root -p < database/voip_app_new.sql
-   ```
-
-2. Export Environment Variables before starting `app.py`:
-   ```bash
-   export DB_TYPE=mysql
-   export DB_HOST=127.0.0.1
-   export DB_USER=root
-   export DB_PASSWORD=your_password
-   export DB_NAME=voip_app
-   ```
-
----
-
-## 🎓 College Viva / Defense FAQ Guide
-
-| Question | Answer for Project Panel |
-| :--- | :--- |
-| **How does 10-Digit UID routing work?** | When a user registers, the server generates a unique 10-digit random number stored in the DB. When a WebSocket connects (`/ws/{uid}`), the server maps the socket connection to that UID in memory (`ConnectionManager`). |
-| **How is media transmitted?** | Media (audio & video) is transmitted **directly Peer-to-Peer** between browsers using WebRTC (`RTCPeerConnection`). The server only handles signaling (SDP Offer/Answer & ICE candidates). |
-| **Why WebSockets instead of HTTP Polling?** | WebSockets provide full-duplex, real-time, low-latency communication required for instant call signaling, presence tracking, and ringing events. |
-| **How are firewalls / NATs handled?** | The application configures public **STUN Servers** (`stun:stun.l.google.com:19302`) to discover public IP/port pairs for peers behind routers/NATs. |
-| **Is authentication secure?** | Yes, passwords are hashed using `passlib[bcrypt]` before being stored in the database. JWT tokens authenticate API endpoints. |
-
----
-
-## 📁 Directory Structure
-
-```
+```text
 callsphere/
-├── backend/
-│   ├── app.py              # FastAPI server & WebSockets WebRTC signaling
-│   ├── db.py               # Database abstraction layer (SQLite + MySQL)
-│   ├── requirements.txt    # Python dependencies
-│   └── callsphere.db       # Auto-created SQLite DB
-├── database/
-│   ├── voip_app_new.sql    # Production MySQL schema & views
-│   └── voip_app.sql        # Legacy schema
-├── frontend/
-│   ├── app.html            # Main VoIP phone web app UI
-│   ├── index.html          # Product landing page
-│   ├── css/                # Glassmorphic styles
-│   └── js/
-│       ├── api.js          # REST API bridge
-│       ├── webrtc.js       # WebRTC client engine & STUN setup
-│       └── app.js          # UI state manager & event listeners
-├── README.md               # Documentation & setup guide
-└── implementation_plan.md  # Project design document
+├── apps/web/                 # React 19 + TypeScript + Vite + Tailwind CSS v4 SPA
+│   ├── public/images/        # Static team portraits
+│   └── src/
+│       ├── components/app/   # Dialer, Recents, Messages (E2EE), Contacts, Groups, Call Stage, Settings
+│       ├── components/public/# Landing, Team, Architecture, Contact layout
+│       ├── components/ui/    # Reusable obsidian UI primitives (Button, Input, Modal, Toast, SearchBar)
+│       ├── lib/              # api.ts, socket.ts, webrtc.ts, cryptoClient.ts, soundEngine.ts
+│       ├── pages/            # Route-level pages
+│       └── styles/tokens.css # Tailwind CSS v4 @theme design tokens
+├── server/                   # Python Flask + Flask-SocketIO backend
+│   ├── app/
+│   │   ├── routes/           # REST blueprints (auth, auth_v2, contacts, groups, calls, keys, messages)
+│   │   ├── sockets/          # Socket.IO signaling, presence, multi-device ringing, and E2EE chat
+│   │   ├── config.py         # Typed .env configuration
+│   │   ├── db.py             # MariaDB connection pool + SQLite dev backend
+│   │   ├── security.py       # Argon2id hashing + PyJWT HttpOnly cookie auth
+│   │   ├── otp_service.py    # 6-digit Email OTP generation, HMAC hashing & background SMTP
+│   │   └── store.py          # Redis / In-Memory store for multi-device presence, OTPs & rate limits
+│   ├── migrations/           # Numbered idempotent MariaDB SQL migrations (001, 002, 003)
+│   ├── tests/                # Pytest integration suite
+│   ├── pyproject.toml        # Ruff & Pytest configuration
+│   ├── requirements.txt      # Python dependencies
+│   └── run.py                # Server entrypoint
+├── .env.example              # Environment configuration template
+├── .gitignore
+├── README.md                 # Setup & overview
+└── Report.md                 # In-depth engineering & architecture walkthrough
 ```
+
+### Architecture & Request Flow
+1. **Authentication & Security:**
+   - Passwords are hashed with **Argon2id** (`argon2-cffi`).
+   - Sessions use short-lived **JWT access tokens (15 min)** and **refresh tokens (14 days)** stored in `HttpOnly`, `SameSite=Lax` cookies (`cs_access_token`, `cs_refresh_token`), never in `localStorage`.
+   - Optional **Email OTP 2FA** (`/api/v2/auth/login`, `/api/v2/auth/otp/verify`) generates a `secrets`-backed 6-digit code, stores its HMAC-SHA256 hash with a 5-minute TTL (5-attempt cap, single-use deletion), and dispatches email in a background thread.
+2. **WebRTC Calling & Multi-Device Signaling:**
+   - Authenticated browsers connect over **Socket.IO** (`/socket.io`), validated via JWT on `connect`, and join `uid:<10-digit-uid>` and `group:<group_uid>` rooms.
+   - `call:offer` checks `blocked_users` and the recipient's `privacy_mode` (`everyone`, `contacts_only`, `dnd`) server-side before ringing all active devices of the target UID simultaneously.
+   - When one device answers or declines, `call:cancelled` dismisses the incoming overlay on all sibling devices.
+   - Media (Opus audio / VP8-H.264 video) flows peer-to-peer via **WebRTC** with trickle ICE and STUN/TURN servers fetched from `GET /api/v1/calls/ice-servers` (automatically falling back to OpenRelay TURN over TCP/TLS 443 in development when custom `.env` TURN credentials are not set).
+3. **End-to-End Encrypted Messaging & File Sharing:**
+   - Each browser generates a non-extractable **ECDH (P-256)** keypair via the Web Crypto API (`crypto.subtle`), stores the private key locally in **IndexedDB** (keyed per origin), and publishes the public JWK to `PUT /api/v2/keys/public`.
+   - Shared **AES-GCM (256-bit)** session keys are derived on-device, cached in memory by peer public key fingerprint, and use a fresh 12-byte random IV for every message and file.
+   - The server stores only ciphertext, IVs, and encrypted `.bin` attachment blobs in `STORAGE_ROOT`—never plaintext.
+   - Desktop renders a 2-pane split view for Messages, while mobile opens threads full-screen; all list views (Recent Calls, Messages, Contacts, Groups) include client-side search, and Web Audio provides incoming/outbound ringtones and message notification chimes.
 
 ---
 
-## 📜 License
-This project is developed for educational purposes as a College Final Year Degree Major Project.
+## Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite 7, Tailwind CSS v4 (`@tailwindcss/vite`), React Router 7, Lucide React, Socket.IO Client, WebRTC, Web Crypto API |
+| **Backend** | Python 3.11+, Flask 3, Flask-SocketIO, Pydantic v2, Argon2id (`argon2-cffi`), PyJWT, `python-dotenv` |
+| **Database & Store** | MariaDB (`mysql-connector-python` connection pool) or SQLite (zero-setup local dev), Redis (`redis-py`) or In-Memory store |
+| **Quality & Testing** | Ruff (lint + format), Pytest, TypeScript (`tsc --noEmit`), ESLint 9 |
+
+---
+
+## Getting Started (From a Fresh Git Clone)
+
+### 1. Clone the Repository & Configure `.env`
+
+```bash
+git clone <your-repo-url> callsphere
+cd callsphere
+```
+
+Create `.env` from `.env.example`:
+- **Linux / macOS:**
+  ```bash
+  cp .env.example .env
+  ```
+- **Windows (PowerShell):**
+  ```powershell
+  Copy-Item .env.example .env
+  ```
+
+Open `.env` and replace `SECRET_KEY` and `JWT_SECRET_KEY` with two distinct random strings (64+ hex characters). You can generate them with Python:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+> **Quick Local Dev Mode (Zero External Database Setup):**
+> You can run CallSphere immediately using SQLite (`server/callsphere_dev.db`) and the in-memory presence/OTP store by setting `DB_TYPE=sqlite` and `USE_INMEMORY_STORE=true` when starting the server (shown below).
+>
+> **Full MariaDB + Redis Mode:**
+> Install MariaDB and Redis for your OS, create the `callsphere_v2` database and `callsphere_app` user matching `.env`, and apply the migrations in order:
+> `server/migrations/001_v1_baseline.sql`, `002_v2_auth_otp.sql`, `003_v2_e2ee_messages.sql`.
+
+---
+
+### 2. OS-Specific Setup & Run Instructions
+
+#### Prerequisites (All Platforms)
+- **Python 3.11+** (with `pip` and `venv`)
+- **Node.js 20+** (with `npm`)
+
+---
+
+#### Linux (Ubuntu / Debian / Arch)
+
+1. **Install prerequisites (if missing):**
+   ```bash
+   # Ubuntu / Debian
+   sudo apt update && sudo apt install -y python3 python3-venv python3-pip nodejs npm
+
+   # Arch / Omarchy
+   sudo pacman -S --needed python nodejs npm
+   ```
+2. **Set up Python virtual environment & install backend dependencies:**
+   ```bash
+   python3 -m venv .venv
+   .venv/bin/pip install -r server/requirements.txt
+   ```
+3. **Install frontend dependencies:**
+   ```bash
+   npm --prefix apps/web install
+   ```
+4. **Start the backend (Terminal 1):**
+   ```bash
+   DB_TYPE=sqlite USE_INMEMORY_STORE=true PYTHONPATH=server .venv/bin/python server/run.py
+   ```
+   *(If using MariaDB + Redis instead, omit `DB_TYPE=sqlite USE_INMEMORY_STORE=true`.)*
+5. **Start the frontend (Terminal 2):**
+   ```bash
+   npm --prefix apps/web run dev
+   ```
+   Open **`http://localhost:5173/`**.
+
+---
+
+#### macOS (Apple Silicon / Intel)
+
+1. **Install prerequisites via Homebrew:**
+   ```bash
+   brew install python node
+   ```
+2. **Set up Python virtual environment & install backend dependencies:**
+   ```bash
+   python3 -m venv .venv
+   .venv/bin/pip install -r server/requirements.txt
+   ```
+3. **Install frontend dependencies:**
+   ```bash
+   npm --prefix apps/web install
+   ```
+4. **Start the backend (Terminal 1):**
+   ```bash
+   DB_TYPE=sqlite USE_INMEMORY_STORE=true PYTHONPATH=server .venv/bin/python server/run.py
+   ```
+5. **Start the frontend (Terminal 2):**
+   ```bash
+   npm --prefix apps/web run dev
+   ```
+   Open **`http://localhost:5173/`**.
+
+---
+
+#### Windows (PowerShell)
+
+1. **Install prerequisites:**
+   - Install **Python 3.11+** from [python.org](https://www.python.org/downloads/) (check **"Add python.exe to PATH"**).
+   - Install **Node.js 20+ LTS** from [nodejs.org](https://nodejs.org/).
+2. **Set up Python virtual environment & install backend dependencies:**
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\pip install -r server\requirements.txt
+   ```
+3. **Install frontend dependencies:**
+   ```powershell
+   npm --prefix apps\web install
+   ```
+4. **Start the backend (PowerShell Terminal 1):**
+   ```powershell
+   $env:DB_TYPE="sqlite"
+   $env:USE_INMEMORY_STORE="true"
+   $env:PYTHONPATH="server"
+   .\.venv\Scripts\python server\run.py
+   ```
+5. **Start the frontend (PowerShell Terminal 2):**
+   ```powershell
+   npm --prefix apps\web run dev
+   ```
+   Open **`http://localhost:5173/`**.
+
+---
+
+### 3. Optional Tools
+
+#### Exposing via Cloudflare Tunnel (Required for Mobile Mic/Camera & E2EE)
+Browsers block `getUserMedia` (mic/camera) and `crypto.subtle` (Web Crypto E2EE) on plain HTTP LAN IPs (`http://192.168.x.x`). Use `cloudflared` to get an instant HTTPS URL that proxies both the frontend and backend:
+```bash
+cloudflared tunnel --url http://localhost:5173
+```
+
+#### Inspecting the SQLite Dev Database (phpMyAdmin-style UI)
+```bash
+# Linux / macOS
+.venv/bin/pip install sqlite-web
+.venv/bin/sqlite_web server/callsphere_dev.db --host 127.0.0.1 --port 8080
+
+# Windows (PowerShell)
+.\.venv\Scripts\pip install sqlite-web
+.\.venv\Scripts\sqlite_web server\callsphere_dev.db --host 127.0.0.1 --port 8080
+```
+Open **`http://127.0.0.1:8080/`**.
+
+#### Email 2FA (Gmail SMTP)
+To receive real 6-digit OTP emails when 2FA is enabled in **Control Center**:
+1. Enable 2-Step Verification on your Google Account and create a **16-character App Password**.
+2. Set `SMTP_USER` and `SMTP_PASS` in `.env` and restart the backend.
+*(When SMTP credentials are left as placeholders in development, OTP codes print to the backend terminal stdout.)*
+
+---
+
+## Verification & Checks
+
+Run all backend and frontend checks from the repository root:
+
+```bash
+# Backend lint, format check & tests (Linux / macOS)
+.venv/bin/ruff check --config server/pyproject.toml server/
+.venv/bin/ruff format --config server/pyproject.toml --check server/
+PYTHONPATH=server .venv/bin/pytest server/tests/ -v
+
+# Frontend typecheck, lint & production build
+npm --prefix apps/web run typecheck
+npm --prefix apps/web run lint
+npm --prefix apps/web run build
+```

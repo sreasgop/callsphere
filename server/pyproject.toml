@@ -1,0 +1,38 @@
+[project]
+name = "callsphere-server"
+version = "1.0.0"
+description = "CallSphere Flask + Flask-SocketIO VoIP signaling and REST backend"
+requires-python = ">=3.11"
+dependencies = [
+    "Flask>=3.0.0",
+    "Flask-SocketIO>=5.3.6",
+    "simple-websocket>=1.0.0",
+    "mysql-connector-python>=8.3.0",
+    "argon2-cffi>=23.1.0",
+    "PyJWT>=2.8.0",
+    "pydantic>=2.6.0",
+    "python-dotenv>=1.0.1",
+    "redis>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.4.0",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B", "UP"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
